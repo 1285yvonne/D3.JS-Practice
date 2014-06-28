@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset = "utf-8">
+	<title>制作一个折线图</title>
+	<script type="text/javascript" src= "d3.js"></script>
+</head>
+<style type ="text/css">
+	body{
+		height: 100%;
+	}
+	.axis path,
+	.axis line{
+		fill: none ;
+		stroke : black;
+		shape-rendering : crispEdges;
+	}
+
+	.axis text {
+		font-family:sans-serif;
+		font-size: 11px;
+	}
+</style>
+
+<body>
+<script type ="text/javascript">
+	 var dataset = [];
+	 var xMarks = [];
+	 var w = 600;
+	 var h = 400;
+	 var padding = 40;
+
+	 getData();
+
+	 var svg = d3.select("body")
+	 	.append("svg")
+	 	.attr("wight",w)
+	 	.attr("height",h)
+
+	 svg.append("g")
+	 	.append("rect")
+	 	.attr("x",0)
+	 	.attr("y",0)
+	 	.attr("width",w)
+	 	.attr("height",h)
+	 	.style("fill","#FFF")
+	 	.style("stroke-width",2)
+	 	.style("stroke","#E7E7E7")
+
+	 var xScale = d3.scale.linear()
+	 			.domain([0,dataset.length-1])
+	 			.range([padding, w-padding]);
+
+	 var yScale = d3.scale.linear()
+	 			.domain([0,d3.max(dataset)])
+	 			.range([h-padding, padding]);
+
+	 var xAxis = d3.svg.axis()
+	 	 .scale(xScale)
+	 	 .orient("bottom").ticks(dataset.length);
+
+	 var xBar = svg.append("g")
+	 		.attr("class","axis")
+	 		.attr("transform","translate(0,"+(h-padding)+")")
+	 		.call(xAxis)
+	 			.selectAll("text")
+	 				.text(function(d) {return xMarks[d];});
+
+	 var yAxis = d3.svg.axis()
+	 	 .scale(yScale)
+	 	 .orient("left").ticks(10);
+
+	 var yBar = svg.append("g")
+	 		.attr("class","axis")
+	 		.attr("transform","translate("+ padding+",0)")
+	 		.call(yAxis);
+
+	 var line = d3.svg.line()
+	 	.interpolate("linear")
+	 		.x(function(d,i) {return xScale(i);})
+	 	.y(function(d) {return yScale(d);});
+
+     var path = svg.append("path")
+     	.attr("d",line(dataset))
+     		.style("fill","#F00")
+     		.style("fill","none")
+     		.style("stroke-width",1)
+     		.style("stroke","#F00")
+     		.style("stroke-opacity",0.9);
+
+     svg.selectAll("circle")
+     	.data(dataset)
+     	.enter()
+     	.append("circle")
+     	.attr("cx",function(d,i){
+     		return xScale(i);
+     	})
+     	.attr("cy",function(d) {
+     		return yScale(d);
+     	})
+     	.attr("r",5)
+     	.attr("fill",function(d){
+     		return "rgb(" + (d%255) + ",0,0)" ;
+     	});
+
+     function drawChart()
+     {
+     	getData();
+
+     	yBar.transition().duration(1000).call(yAxis);
+
+     	yScale = d3.scale.linear()
+     		.domain([0,d3.max(dataset)])
+     		.range([h-padding,padding]);
+
+     	path.transition().duration(1000).attr("d",line(dataset));
+
+     	svg.selectAll("circle")
+     		.data(dataset)
+     		.transition()
+     		.duration(1000)
+     		.attr("cx",function(d,i){
+     			return xScale(i);
+     		})
+     		.attr("cy",function(d){
+     			return yScale(d);
+     		})
+     		.attr("fill",function(d){
+     			return "rgb("  + (d%255) + ",0,0)";
+     		});
+     }
+
+     function getData()
+     {
+     	var dataNum = 15 ;
+     	dataset = [];
+     	xMarks = [];
+     	for (var i = 1; i< dataNum; i++) {
+     		dataset.push(Math.round(Math.random()*h));
+     		xMarks.push("x" + i);
+     	}
+     }
+</script>
+
+<p align = "left">
+
+welcome to the d3.js 
+<button onClick = "javascript:drawChart();"> 刷新数据 </button>
+</p>
+
+</body>
+</html>
+
